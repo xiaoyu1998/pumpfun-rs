@@ -23,7 +23,6 @@ use anchor_spl::{
     token,
 };
 use borsh::BorshDeserialize;
-use mpl_token_metadata::accounts::Metadata;
 pub use pumpfun_cpi as cpi;
 use std::rc::Rc;
 
@@ -112,7 +111,7 @@ impl<'a> PumpFun<'a> {
                 metadata: Self::get_metadata_pda(&mint.pubkey()),
                 mint: mint.pubkey(),
                 mint_authority: Self::get_mint_authority_pda(),
-                mpl_token_metadata: mpl_token_metadata::ID,
+                mpl_token_metadata: constants::accounts::MPL_TOKEN_METADATA,
                 program: cpi::ID,
                 rent: Rent::id(),
                 system_program: System::id(),
@@ -269,7 +268,13 @@ impl<'a> PumpFun<'a> {
 
     /// Gets the PDA for a token's metadata account
     pub fn get_metadata_pda(mint: &Pubkey) -> Pubkey {
-        Metadata::find_pda(mint).0
+        let seeds: &[&[u8]; 3] = &[
+            constants::seeds::METADATA_SEED,
+            constants::accounts::MPL_TOKEN_METADATA.as_ref(),
+            mint.as_ref(),
+        ];
+        let program_id: &Pubkey = &constants::accounts::MPL_TOKEN_METADATA;
+        Pubkey::find_program_address(seeds, program_id).0
     }
 
     /// Gets the global state account data

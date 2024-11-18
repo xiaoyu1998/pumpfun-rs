@@ -29,6 +29,10 @@ pub mod seeds {
 pub mod accounts {
     use anchor_client::solana_sdk::pubkey::Pubkey;
 
+    /// Public key for the MPL Token Metadata program
+    pub const MPL_TOKEN_METADATA: Pubkey =
+        Pubkey::new_from_array(mpl_token_metadata::ID.to_bytes());
+
     /// Authority for program events
     pub const EVENT_AUTHORITY: Pubkey = Pubkey::new_from_array([
         172u8, 241u8, 54u8, 235u8, 1u8, 252u8, 28u8, 78u8, 136u8, 61u8, 35u8, 200u8, 181u8, 132u8,
