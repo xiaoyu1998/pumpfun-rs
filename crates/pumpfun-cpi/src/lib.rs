@@ -1,14 +1,3 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+anchor_gen::generate_cpi_crate!("idl.classic.json");
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+declare_id!("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P");
