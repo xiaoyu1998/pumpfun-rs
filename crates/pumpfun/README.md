@@ -16,31 +16,18 @@ cargo add pumpfun
 
 The main entry point is the `PumpFun` struct which provides methods for interacting with the program:
 
-> **Important:** You must create an Associated Token Account (ATA) for your wallet before buying tokens. This is required to receive the purchased tokens.
-
-> **Coming Soon:** Automatic ATA creation will be added in a future release to streamline the buying process.
-
-For instructions on creating an ATA, see the [Solana documentation](https://spl.solana.com/associated-token-account).
+> **Note:** The SDK automatically creates Associated Token Accounts (ATAs) when needed during buy transactions. No manual ATA creation is required.
 
 ```rust
 use anchor_client::{
     solana_sdk::{
         native_token::LAMPORTS_PER_SOL,
-        pubkey::Pubkey,
         signature::{Keypair, Signature},
         signer::Signer,
-        transaction::Transaction,
     },
     Cluster,
 };
-use anchor_spl::{
-    associated_token::{
-        get_associated_token_address,
-        spl_associated_token_account::instruction::create_associated_token_account,
-    },
-    token::spl_token,
-};
-use pumpfun::{accounts::BondingCurveAccount, utils::CreateTokenMetadata, PumpFun};
+use pumpfun::{accounts::BondingCurveAccount, utils::CreateTokenMetadata, PriorityFee, PumpFun};
 
 // Create a new PumpFun client
 let payer: Keypair = Keypair::new();
@@ -49,7 +36,7 @@ let client: PumpFun<'_> = PumpFun::new(Cluster::Mainnet, &payer, None, None);
 // Mint keypair
 let mint: Keypair = Keypair::new();
 
-// Create a new token
+// Token metadata
 let metadata: CreateTokenMetadata = CreateTokenMetadata {
     name: "Lorem ipsum".to_string(),
     symbol: "LIP".to_string(),
@@ -59,61 +46,59 @@ let metadata: CreateTokenMetadata = CreateTokenMetadata {
     telegram: None,
     website: Some("https://example.com".to_string()),
 };
-let signature: Signature = client.create(&mint, metadata).await?;
+
+// Optional priority fee to expedite transaction processing (e.g., 100 LAMPORTS per compute unit, equivalent to a 0.01 SOL priority fee)
+let fee: Option<PriorityFee> = Some(PriorityFee {
+    limit: Some(100_000),
+    price: Some(100_000_000),
+});
+
+// Create token with metadata
+let signature: Signature = client.create(&mint, metadata.clone(), fee).await?;
 println!("Created token: {}", signature);
+
+// Print amount of SOL and LAMPORTS
+let amount_sol: u64 = 1;
+let amount_lamports: u64 = LAMPORTS_PER_SOL * amount_sol;
+println!("Amount in SOL: {}", amount_sol);
+println!("Amount in LAMPORTS: {}", amount_lamports);
+
+// Create and buy tokens with metadata
+let signature: Signature = client.create_and_buy(&mint, metadata.clone(), amount_lamports, None, fee).await?;
+println!("Created and bought tokens: {}", signature);
 
 // Print the curve
 let curve: BondingCurveAccount = client.get_bonding_curve_account(&mint.pubkey())?;
 println!("{:?}", curve);
 
-// Create an ATA
-let ata: Pubkey = get_associated_token_address(&payer.pubkey(), &mint.pubkey());
-let tx: Transaction = Transaction::new_signed_with_payer(
-    &[create_associated_token_account(
-        &payer.pubkey(),
-        &payer.pubkey(),
-        &mint.pubkey(),
-        &spl_token::id(),
-    )],
-    Some(&payer.pubkey()),
-    &[&payer],
-    client.rpc.get_latest_blockhash().unwrap(),
-);
-let signature: Signature = client.rpc.send_and_confirm_transaction(&tx)?;
-println!("ATA: {:?}, Signature: {:?}", ata, signature);
-
-// Print amount of SOL, LAMPORTS, and TOKENS
-let amount_sol: u64 = 1;
-let amount_lamports: u64 = LAMPORTS_PER_SOL * amount_sol;
-let amount_token: u64 = curve.get_buy_price(amount_lamports)?;
-println!("Amount in SOL: {}", amount_sol);
-println!("Amount in LAMPORTS: {}", amount_lamports);
-println!("Amount in TOKENS: {}", amount_token);
-
-// Buy tokens
-let signature: Signature = client.buy(&mint.pubkey(), amount_lamports, Some(500)).await?;
+// Buy tokens (ATA will be created automatically if needed)
+let signature: Signature = client.buy(&mint.pubkey(), amount_lamports, None, fee).await?;
 println!("Bought tokens: {}", signature);
 
-// Sell tokens
-let signature: Signature = client.sell(&mint.pubkey(), amount_token, Some(500)).await?;
+// Sell tokens (sell all tokens)
+let signature: Signature = client.sell(&mint.pubkey(), None, None, fee).await?;
 println!("Sold tokens: {}", signature);
 ```
 
 ## Features
 
-- Create new tokens with metadata
-- Buy tokens using SOL
-- Sell tokens for SOL
-- Query bonding curve and global state
-- Calculate prices and slippage
+- Create new tokens with metadata and custom image
+- Buy tokens using SOL with automatic ATA creation
+- Sell tokens for SOL with slippage protection
+- Query global and bonding curve state
+- Calculate prices, fees and slippage
+- Priority fee support for faster transactions
+- IPFS metadata storage
 
 ## Architecture
 
 The SDK is organized into several modules:
 
+- `cpi`: Cross-program invocation interfaces
 - `accounts`: Account structs for deserializing on-chain state
 - `constants`: Program constants like seeds and public keys
 - `error`: Custom error types for error handling
+- `instruction`: Transaction instruction builders
 - `utils`: Helper functions and utilities
 
 The main `PumpFun` struct provides high-level methods that abstract away the complexity of:
@@ -121,7 +106,10 @@ The main `PumpFun` struct provides high-level methods that abstract away the com
 - Managing Program Derived Addresses (PDAs)
 - Constructing and signing transactions
 - Handling account lookups and deserialization
-- Calculating prices and slippage
+- Calculating prices, fees and slippage
+- IPFS metadata uploads
+- Priority fee configuration
+- Associated Token Account management
 
 ## Contributing
 

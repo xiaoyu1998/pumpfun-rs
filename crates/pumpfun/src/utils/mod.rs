@@ -1,7 +1,7 @@
 //! Utilities for working with token metadata and IPFS uploads.
 //!
 //! This module provides functionality for creating and managing token metadata,
-//! including uploading images and metadata to IPFS via the Pump.fun API.
+//! including uploading image and metadata to IPFS via the Pump.fun API.
 
 use isahc::AsyncReadResponseExt;
 use serde::{Deserialize, Serialize};
@@ -42,7 +42,7 @@ pub struct TokenMetadataResponse {
 }
 
 /// Parameters for creating new token metadata.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CreateTokenMetadata {
     /// Name of the token
     pub name: String,
