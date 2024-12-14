@@ -1,6 +1,6 @@
 [package]
 name = "pumpfun"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2021"
 authors = ["Rapheal Bamidele <nhuxhr@gmail.com>"]
 repository = "https://github.com/nhuxhr/pumpfun-rs"

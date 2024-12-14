@@ -3046,7 +3046,7 @@ dependencies = [
 
 [[package]]
 name = "pumpfun"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "anchor-client",
  "anchor-spl",

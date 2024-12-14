@@ -181,7 +181,7 @@ impl<'a> PumpFun<'a> {
         let global_account = self.get_global_account()?;
         let buy_amount = global_account.get_initial_buy_price(amount_sol);
         let buy_amount_with_slippage =
-            utils::calculate_with_slippage_buy(buy_amount, slippage_basis_points.unwrap_or(500));
+            utils::calculate_with_slippage_buy(amount_sol, slippage_basis_points.unwrap_or(500));
 
         let mut request = self.program.request();
 
@@ -268,7 +268,7 @@ impl<'a> PumpFun<'a> {
             .get_buy_price(amount_sol)
             .map_err(error::ClientError::BondingCurveError)?;
         let buy_amount_with_slippage =
-            utils::calculate_with_slippage_buy(buy_amount, slippage_basis_points.unwrap_or(500));
+            utils::calculate_with_slippage_buy(amount_sol, slippage_basis_points.unwrap_or(500));
 
         let mut request = self.program.request();
 
