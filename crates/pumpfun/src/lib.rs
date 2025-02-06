@@ -109,9 +109,9 @@ impl<'a> PumpFun<'a> {
         priority_fee: Option<PriorityFee>,
     ) -> Result<Signature, error::ClientError> {
         // First upload metadata and image to IPFS
-        let ipfs: utils::TokenMetadataResponse = utils::create_token_metadata(metadata)
-            .await
-            .map_err(error::ClientError::UploadMetadataError)?;
+        // let ipfs: utils::TokenMetadataResponse = utils::create_token_metadata(metadata)
+        //     .await
+        //     .map_err(error::ClientError::UploadMetadataError)?;
 
         let mut request = self.program.request();
 
@@ -128,14 +128,24 @@ impl<'a> PumpFun<'a> {
             }
         }
 
-        // Add create token instruction
+        // // Add create token instruction
+        // request = request.instruction(instruction::create(
+        //     self.payer,
+        //     mint,
+        //     cpi::instruction::Create {
+        //         _name: ipfs.metadata.name,
+        //         _symbol: ipfs.metadata.symbol,
+        //         _uri: ipfs.metadata.image,
+        //     },
+        // ));
+
         request = request.instruction(instruction::create(
             self.payer,
             mint,
             cpi::instruction::Create {
-                _name: ipfs.metadata.name,
-                _symbol: ipfs.metadata.symbol,
-                _uri: ipfs.metadata.image,
+                _name: metadata.name,
+                _symbol: metadata.symbol,
+                _uri: metadata.file,
             },
         ));
 
@@ -172,10 +182,10 @@ impl<'a> PumpFun<'a> {
         slippage_basis_points: Option<u64>,
         priority_fee: Option<PriorityFee>,
     ) -> Result<Signature, error::ClientError> {
-        // Upload metadata to IPFS first
-        let ipfs: utils::TokenMetadataResponse = utils::create_token_metadata(metadata)
-            .await
-            .map_err(error::ClientError::UploadMetadataError)?;
+        // // Upload metadata to IPFS first
+        // let ipfs: utils::TokenMetadataResponse = utils::create_token_metadata(metadata)
+        //     .await
+        //     .map_err(error::ClientError::UploadMetadataError)?;
 
         // Get accounts and calculate buy amounts
         let global_account = self.get_global_account()?;
@@ -199,13 +209,23 @@ impl<'a> PumpFun<'a> {
         }
 
         // Add create token instruction
+        // request = request.instruction(instruction::create(
+        //     self.payer,
+        //     mint,
+        //     cpi::instruction::Create {
+        //         _name: ipfs.metadata.name,
+        //         _symbol: ipfs.metadata.symbol,
+        //         _uri: ipfs.metadata.image,
+        //     },
+        // ));
+
         request = request.instruction(instruction::create(
             self.payer,
             mint,
             cpi::instruction::Create {
-                _name: ipfs.metadata.name,
-                _symbol: ipfs.metadata.symbol,
-                _uri: ipfs.metadata.image,
+                _name: metadata.name,
+                _symbol: metadata.symbol,
+                _uri: metadata.file,
             },
         ));
 
